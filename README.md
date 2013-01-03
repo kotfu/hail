@@ -23,3 +23,7 @@ Download and Install
 You need python, I know it works in 2.6, but haven't tried it in 3.x yet.  Rename `hail.py` to `hail`, make it executable, and put it in your path.
 
 To run it on Windows, you may need to do some tweaking.
+
+License
+-------
+Check the LICENSE file, but it's the MIT License, which means you can do whatever you want, as long as you keep the copyright notice.
