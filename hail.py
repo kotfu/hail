@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2007 Jared Crapo
+# Copyright (c) 2007-2017 Jared Crapo
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,9 +21,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# Version 1.0
-#
 """Usage: hail [OPTION]... to-addr
+
 
   -h, --help        display this help and exit
   -s, --subject     subject for the email
@@ -35,102 +34,55 @@
 to-addr is the email address you want to send the message to
 """
 import sys
-import getopt
+import argparse
 import smtplib
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText
-from email.MIMEImage import MIMEImage
-
-class Usage(Exception):
-	def __init__(self,msg):
-		self.msg = msg
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 
 def main(argv=None):
-	if argv is None:
-		argv = sys.argv
 
 	# TODO add -b for bcc-addr
 	# TODO add -c for cc-addr
-	shortopts = "hs:r:q:Q:S:"
-	longopts = [ "help", "subject=", "from=", "plainfile=", "htmlfile=", "smtpserver=" ]
+	parser = argparse.ArgumentParser(description='Send html emails from the command line')
+	parser.add_argument('-s', '--subject', required=True, help='subject of the email')
+	parser.add_argument('-r', '--from-addr', required=True, help='address to send email from')
+	parser.add_argument('-q', '--plainfile', required=True, help='file containing the plain text version of the message')
+	parser.add_argument('-Q', '--htmlfile', required=True, help='file containing the html version of the message')
+	parser.add_argument('-S', '--smtpserver', default='localhost', help='smtp server to use, default is localhost')
+	parser.add_argument('to-addr', nargs='+', help='email address to send to')
+	args = parser.parse_args()
 	
-	# initialize
-	fromAddy = None
-	plainFile = None
-	htmlFile = None
-	toAddrs = None
-	subject = None
-	smtpServer = "localhost"
-	
-	# parse command line options
-	try:
-		try:
-			opts, args = getopt.getopt(argv[1:], shortopts, longopts)
-		except getopt.error, msg:
-			raise Usage(msg)
-	
-		# process options
-		for opt, parm in opts:
-			if opt in ("-h", "--help"):
-				print >>sys.stderr, __doc__
-				return 0
-			if opt in ("-s", "--subject"):
-				subject = parm
-			if opt in ("-r", "--from"):
-				fromAddy = parm
-			if opt in ("-q", "--plainfile"):
-				plainFile = parm
-			if opt in ("-Q", "--htmlfile"):
-				htmlFile = parm	
-			if opt in ("-S", "--smtpserver"):
-				smtpServer = parm
-		if subject == None:
-			raise Usage("no subject")
-		if fromAddy == None:
-			raise Usage("no from address")
-		if plainFile == None:
-			raise Usage("no plain message file")
-		if htmlFile == None:
-			raise Usage("no html message file")
-
-		# process arguments
-		toAddrs = args
-		if len(toAddrs) == 0:
-			raise Usage("no recipients")
-
-		# go do it
-		sendmail(smtpServer, fromAddy, toAddrs, subject, plainFile, htmlFile)
-	except Usage, err:
-		print >>sys.stderr, err.msg
-		print >>sys.stderr, "for help use --help"
-		return 2
-
-def sendmail(smtpServer, fromAddy, toAddrs, subject, plainFile, htmlFile):
-	# Create the root message and fill in the from, to, and subject headers
-	toAddr = toAddrs[0]
-	msgRoot = MIMEMultipart('related')
-	msgRoot['Subject'] = subject
-	msgRoot['From'] = fromAddy
-	msgRoot['To'] = toAddr
-	msgRoot.preamble = 'This is a multi-part message in MIME format.'
-
-	# Encapsulate the plain and HTML versions of the message body in an
-	# 'alternative' part, so message agents can decide which they want to display.
-	msgAlternative = MIMEMultipart("alternative")
-	msgRoot.attach(msgAlternative)
-
-	# make the plain text version
-	msgText = MIMEText("".join(open(plainFile).readlines()))
-	msgAlternative.attach(msgText)
-
-	# make the html version of the email
-	msgText = MIMEText("".join(open(htmlFile).readlines()), "html")
-	msgAlternative.attach(msgText)
-
-	# send the email
+	# open an SMTP connection
 	smtp = smtplib.SMTP()
-	smtp.connect(smtpServer)
-	smtp.sendmail(fromAddy, toAddr, msgRoot.as_string())
+	smtp.connect(args.smtpserver)
+
+	for to_addr in args.to_addr:
+
+		# Create the root message and fill in the from, to, and subject headers
+		msgRoot = MIMEMultipart('related')
+		msgRoot['Subject'] = args.subject
+		msgRoot['From'] = args.from_addr
+		msgRoot['To'] = to_addr
+		msgRoot.preamble = 'This is a multi-part message in MIME format.'
+
+		# Encapsulate the plain and HTML versions of the message body in an
+		# 'alternative' part, so message agents can decide which they want to display.
+		msgAlternative = MIMEMultipart("alternative")
+		msgRoot.attach(msgAlternative)
+
+		# make the plain text version
+		msgText = MIMEText("".join(open(plainFile).readlines()))
+		msgAlternative.attach(msgText)
+
+		# make the html version of the email
+		msgText = MIMEText("".join(open(htmlFile).readlines()), "html")
+		msgAlternative.attach(msgText)
+
+		# send the email
+		smtp.sendmail(args.from_addr, to_addr, msgRoot.as_string())
+
+	# all done sending, clean up
 	smtp.quit()
 
 if __name__ == "__main__":

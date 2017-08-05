@@ -15,12 +15,12 @@ Today, most *nix machines don't even have `mail` installed.  However, I still oc
 > "Every program attempts to expand until it can read mail. Those
 > programs which cannot so expand are replaced by ones which can."
 
-For all you kids out there who have never heard of Jamie Zawinski, he worked at [Mosiac Communications Corporation](http://home.mcom.com/) and wrote the unix version of [Netscape](http://home.mcom.com/archives/) (which later became [Netscape Navigator](http://browser.netscape.com/releases) and which is now [Mozilla Firefox](http://www.mozilla.com/firefox)) back when Windows was still a 16 bit OS.  And yes, he was the guy who wrote the first version of Netscape Mail and News.
+For all you kids out there who have never heard of Jamie Zawinski, he worked at [Mosiac Communications Corporation](http://home.mcom.com/)  back when Windows was still a 16 bit OS. He wrote the unix version of [Netscape](http://home.mcom.com/archives/) (which later became [Netscape Navigator](http://browser.netscape.com/releases) and which is now [Mozilla Firefox](http://www.mozilla.com/firefox)). And yes, he was the guy who wrote the first version of Netscape Mail and News.
 
 Download and Install
 --------------------
 
-You need python, I know it works in 2.6, but haven't tried it in 3.x yet.  Rename `hail.py` to `hail`, make it executable, and put it in your path.
+You need 2.7+ or 3+.  Rename `hail.py` to `hail`, make it executable, and put it in your path.
 
 To run it on Windows, you may need to do some tweaking.
 
